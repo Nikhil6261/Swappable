@@ -1,25 +1,17 @@
 import React from "react";
 import { useForm } from "react-hook-form";
+import Api from '../api/Api'
 
 const Signup = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const {    register, handleSubmit, formState: { errors }, } = useForm();
 
   const onSubmit = async (data) => {
     console.log("Form Data:", data);
 
-    // 👉 Send data to your backend API
-    // const res = await fetch("http://localhost:8080/register", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(data),
-    // });
-    // const result = await res.json();
-    // console.log(result);
-  };
+    const res = await Api.post('/api/signup', data )
+}
+    
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">

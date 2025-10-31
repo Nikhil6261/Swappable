@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://taskmanangement.onrender.com',
+  baseURL: 'https://swappable.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   },

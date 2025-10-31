@@ -1,5 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
+import Api from '../api/Api'
 
 const Login = () => {
   const {
@@ -10,17 +11,11 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     console.log("Login Data:", data);
+  
+    const res = await Api.get('/api/login' ,data)
+  
+  }
 
-    // 👉 Backend integration example:
-    // const res = await fetch("http://localhost:8080/login", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(data),
-    //   credentials: "include" // if using cookies/JWT
-    // });
-    // const result = await res.json();
-    // console.log(result);
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">

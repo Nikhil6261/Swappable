@@ -3,6 +3,9 @@ import Hero from './pages/Hero'
 import { Route , Routes } from 'react-router-dom'
 import Signup from './component/Signup'
 import Login from './component/Login'
+import DashboardPage from './component/dash'
+import Marketplace from './component/Marketing'
+import CreateSwapForm from './component/Createfrom'
 
 const App = () => {
   return (
@@ -12,6 +15,12 @@ const App = () => {
 
       <Route path="login" element={<Login />} />
       <Route path="signup" element={<Signup/>} />
+
+      <Route path="dash" element={<DashboardPage/>} />
+      <Route path="marketplace" element={<Marketplace/>} />
+
+      <Route path="create" element={<CreateSwapForm/>} />
+
 
 
     </Routes>
