@@ -3,21 +3,24 @@ import db from "../model/db.js";
 
 /** 🔹 CREATE a new swappable slot */
 export const create = async (req, res) => {
-  const { user_id, title, start_time, end_time, status } = req.body;
+  const { user_id, title, date, start_time, end_time, status } = req.body;
 
-  console.log(user_id, title, start_time, end_time, status);
+  console.log(user_id, title, date, start_time, end_time, status);
 
   try {
-    const sql = ` INSERT INTO swappable (user_id, title, start_time, end_time, status) VALUES (?, ?, ?, ?, ?) `;
+    const sql = ` INSERT INTO swappable (user_id, title, date, start_time, end_time, status)  VALUES (?, ?, ?, ?, ?, ?) `;
 
-    const [result] = await db.query(sql, [user_id, title, start_time, end_time, status, ]);
+    const [result] = await db.query(sql, [user_id,  title, date, start_time, end_time, status, ]);
 
-    res.status(200).json({ message: "Slot added successfully", id: result.insertId,    }); 
-     
-} catch (error) {
+    res.status(200).json({
+      message: "Slot added successfully",
+      id: result.insertId,
+    });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 /** 🔹 READ all slots */
 export const readALL = async (req, res) => {

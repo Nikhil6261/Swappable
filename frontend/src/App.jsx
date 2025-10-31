@@ -3,7 +3,7 @@ import Hero from './pages/Hero'
 import { Route , Routes } from 'react-router-dom'
 import Signup from './component/Signup'
 import Login from './component/Login'
-import DashboardPage from './component/dash'
+import DashboardPage from './component/Dash'
 import Marketplace from './component/Marketing'
 import CreateSwapForm from './component/Createfrom'
 
