@@ -1,17 +1,25 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import Api from '../api/Api'
+import {useNavigate} from 'react-router-dom'
+import Cookies from 'js-cookie';
 
 const Login = () => {
   const {    register, handleSubmit, formState: { errors }, } = useForm();
 
+const navigate = useNavigate()
   const onSubmit = async (data) => {
     console.log( data);
   
     const res = await Api.post('/api/login',data)
     console.log(res);
-    
+ 
+    if(res.request.status ==200){
+ Cookies.set("token" , res.data.token)
+      navigate('/dash')
+    }
   }
+
 
 
   return (

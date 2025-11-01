@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/Api";
-import { Calendar, ShoppingBag, Bell, LogOut, Clock, User } from "lucide-react";
+import cookie from "js-cookie";
+import {
+  Calendar,
+  ShoppingBag,
+  Bell,
+  LogOut,
+  Clock,
+  User,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -11,14 +19,50 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await api.get("api/readALL");
-        setEvents(res.data);
+        const token = cookie.get("token");
+        console.log("Token:", token);
+
+        const res = await api.get("/api/single", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        localStorage.setItem("userid", res.data.userId);
+        setEvents(res.data.data[0] || []);
       } catch (err) {
         console.error("Error fetching events:", err);
       }
     };
     fetchEvents();
   }, []);
+
+  // 🔹 Toggle busy/swappable
+  const swap = async (currentStatus, id) => {
+    try {
+      const token = cookie.get("token");
+      const newStatus = currentStatus === "swappable" ? "busy" : "swappable";
+
+      const res = await api.patch(`/api/update/${id}`, { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Status updated:", res.data);
+
+      // Update frontend instantly
+      setEvents((prev) =>
+        prev.map((event) =>
+          event.id === id ? { ...event, status: newStatus } : event
+        )
+      );
+    } catch (err) {
+      console.error("Error updating status:", err);
+    }
+  };
 
   // 🔹 Convert backend timestamps to readable format
   const formatTime = (start, end) => {
@@ -38,12 +82,24 @@ const Dashboard = () => {
   // 🔹 Map event colors based on status
   const getColors = (status) => {
     switch (status) {
-      case "ready_to_swap":
-        return { border: "border-green-400", button: "bg-green-600 hover:bg-green-700", text: "text-green-700" };
       case "swappable":
-        return { border: "border-blue-400", button: "bg-blue-600 hover:bg-blue-700", text: "text-blue-700" };
+        return {
+          border: "border-blue-400",
+          button: "bg-blue-600 hover:bg-blue-700",
+          text: "text-blue-700",
+        };
+      case "ready_to_swap":
+        return {
+          border: "border-green-400",
+          button: "bg-green-600 hover:bg-green-700",
+          text: "text-green-700",
+        };
       default:
-        return { border: "border-gray-300", button: "bg-gray-400 hover:bg-gray-500", text: "text-gray-700" };
+        return {
+          border: "border-gray-300",
+          button: "bg-gray-400 hover:bg-gray-500",
+          text: "text-gray-700",
+        };
     }
   };
 
@@ -82,7 +138,13 @@ const Dashboard = () => {
             <p className="font-medium text-gray-800">Alice Smith</p>
             <p className="text-sm text-gray-500">alice@example.com</p>
           </div>
-          <button className="flex items-center justify-center w-full gap-2 px-4 py-2 border border-red-400 text-red-600 rounded-md hover:bg-red-50">
+          <button
+            onClick={() => {
+              cookie.remove("token");
+              navigate("/");
+            }}
+            className="flex items-center justify-center w-full gap-2 px-4 py-2 border border-red-400 text-red-600 rounded-md hover:bg-red-50"
+          >
             <LogOut className="w-4 h-4" />
             Log Out
           </button>
@@ -112,11 +174,15 @@ const Dashboard = () => {
               return (
                 <div
                   key={event.id}
-                  className={`border ${color.border} rounded-xl shadow-sm bg-white p-5 w-80`}
+                  className={`border ${color.border} rounded-xl shadow-sm bg-white p-5 w-80 transition`}
                 >
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-bold text-lg text-gray-800">{event.title}</h3>
-                    <span className={`text-sm px-2 py-0.5 rounded-full bg-gray-100 ${color.text}`}>
+                    <h3 className="font-bold text-lg text-gray-800">
+                      {event.title}
+                    </h3>
+                    <span
+                      className={`text-sm px-2 py-0.5 rounded-full bg-gray-100 ${color.text}`}
+                    >
                       {event.status}
                     </span>
                   </div>
@@ -128,12 +194,11 @@ const Dashboard = () => {
                     <User className="w-4 h-4 mr-2" />
                     User ID: {event.user_id}
                   </div>
-                  <button className={`w-full text-white font-medium py-2 rounded-md transition ${color.button}`}>
-                    {event.status === "swappable"
-                      ? "Mark as Ready"
-                      : event.status === "ready_to_swap"
-                      ? "Swap Now"
-                      : "Busy"}
+                  <button
+                    onClick={() => swap(event.status, event.id)}
+                    className={`w-full text-white font-medium py-2 rounded-md transition ${color.button}`}
+                  >
+                    {event.status === "swappable" ? "Mark as Busy" : "Mark as Swappable"}
                   </button>
                 </div>
               );

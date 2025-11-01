@@ -3,8 +3,10 @@ import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import APi from '../api/Api'
+import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
-
+import cookies from 'js-cookie'
 const CreateSwapForm = ({ onClose, onSubmit }) => {
   const {
     register, handleSubmit, reset, formState: { errors }, } = useForm({
@@ -12,7 +14,9 @@ const CreateSwapForm = ({ onClose, onSubmit }) => {
     },
   });
 
-  const submitForm = async (data) => {
+  const navigate  =useNavigate();
+
+  const submitForm =   async (data) => {
     const formattedData = {
       title: data.title,
       start_time: `${data.date} ${data.start_time}`,
@@ -20,12 +24,16 @@ const CreateSwapForm = ({ onClose, onSubmit }) => {
       status: data.status,
     };
     
-    
+    let token = cookies.get('token')
+
     console.log(data);
-    const res = await APi.post('/api/create',data)
+    const res = await APi.post( "/api/create", data, {
+    headers: {
+      Authorization: `Bearer ${token}` },
+    }
+);
     
-    
-    console.log(res);
+    if(res.data) {navigate('/dash')} 
     reset();
   };
 
@@ -128,8 +136,7 @@ const CreateSwapForm = ({ onClose, onSubmit }) => {
           </div>
 
           {/* Submit */}
-          <button
-            type="submit"
+          <button type="submit"
             className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold py-2.5 rounded-lg shadow-md hover:shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all"
           >
             Create Swap

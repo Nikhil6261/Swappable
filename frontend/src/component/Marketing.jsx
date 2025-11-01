@@ -1,25 +1,54 @@
-import React from "react";
-import { Calendar, ShoppingBag, Bell, LogOut, Clock, User, ArrowLeftRight } from "lucide-react";
-import {useNavigate} from 'react-router-dom'
+import React, { useEffect, useState } from "react";
+import {
+  Calendar,
+  ShoppingBag,
+  Bell,
+  LogOut,
+  Clock,
+  User,
+  ArrowLeftRight,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import Api from "../api/Api";
 
 const MarketplacePage = () => {
-  const slots = [
-    { id: 1, title: "Team Standup", owner: "John Doe", time: "Wed, Nov 6 | 10–10:30 AM" },
-    { id: 2, title: "Client Review", owner: "Sarah Miller", time: "Thu, Nov 7 | 4–5 PM" },
-    { id: 3, title: "Code Review", owner: "Mark Wilson", time: "Fri, Nov 8 | 2–3 PM" },
-  ];
+  const navigate = useNavigate();
+  const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const navigate =useNavigate() 
+  // 🔹 Fetch slots from backend
+  const fetchSlots = async () => {
+    try {
+      const res = await Api.get(`/api/readALL`);
+      console.log("Fetched Data:", res.data);
+
+      // 🧠 Filter out user_id = 8
+      const filtered = (res.data || []).filter((slot) => slot.user_id !== 8);
+      setSlots(filtered);
+    } catch (err) {
+      console.error("Error fetching slots:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSlots();
+  }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r flex flex-col justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-blue-700 px-6 py-4 border-b">⚡ SlotSwapper</h1>
+          <h1 className="text-2xl font-bold text-blue-700 px-6 py-4 border-b">
+            ⚡ SlotSwapper
+          </h1>
           <nav className="mt-4 space-y-1">
-            <button onClick={()=>  navigate('/dash' )} 
-            className="flex items-center w-full px-6 py-3 text-gray-700 hover:bg-gray-100">
+            <button
+              onClick={() => navigate("/dash")}
+              className="flex items-center w-full px-6 py-3 text-gray-700 hover:bg-gray-100"
+            >
               <Calendar className="w-5 h-5 mr-2" /> Dashboard
             </button>
             <button className="flex items-center w-full px-6 py-3 text-white bg-blue-600 font-medium rounded-r-full">
@@ -42,22 +71,46 @@ const MarketplacePage = () => {
       {/* Marketplace Content */}
       <main className="flex-1 p-8">
         <h2 className="text-3xl font-bold mb-6">Marketplace</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {slots.map(s => (
-            <div key={s.id} className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md">
-              <h3 className="font-semibold text-lg mb-1">{s.title}</h3>
-              <p className="text-sm text-gray-600 flex items-center">
-                <Clock className="w-4 h-4 mr-2" /> {s.time}
-              </p>
-              <p className="text-sm text-gray-600 flex items-center mb-4">
-                <User className="w-4 h-4 mr-2" /> {s.owner}
-              </p>
-              <button className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">
-                <ArrowLeftRight className="w-4 h-4" /> Request Swap
-              </button>
-            </div>
-          ))}
-        </div>
+
+        {loading ? (
+          <p className="text-gray-500">Loading available slots...</p>
+        ) : slots.length === 0 ? (
+          <p className="text-gray-500">No available slots right now.</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {slots.map((s) => (
+              <div
+                key={s.id}
+                className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition"
+              >
+                <h3 className="font-semibold text-lg mb-1">{s.title}</h3>
+                <p className="text-sm text-gray-600 flex items-center">
+                  <Clock className="w-4 h-4 mr-2" />{" "}
+                  {new Date(s.start_time).toLocaleString("en-IN", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}{" "}
+                  –{" "}
+                  {new Date(s.end_time).toLocaleString("en-IN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
+                </p>
+                <p className="text-sm text-gray-600 flex items-center mb-4">
+                  <User className="w-4 h-4 mr-2" /> User #{s.user_id}
+                </p>
+                <button className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">
+                  <ArrowLeftRight className="w-4 h-4" /> Request Swap
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
