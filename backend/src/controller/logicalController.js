@@ -1,16 +1,19 @@
-import express from "express";
+import express, { response } from "express";
 import db from "../model/db.js";
+import jwt from "jsonwebtoken";
 
-/** 🔹 CREATE a new swappable slot */
 export const create = async (req, res) => {
-  const { user_id, title, date, start_time, end_time, status } = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
 
-  console.log(user_id, title, date, start_time, end_time, status);
+  const newtoken = jwt.verify(token, process.env.SECRET);
+  console.log(newtoken);
+
+  const { title, date, start_time, end_time, status } = req.body;
 
   try {
     const sql = ` INSERT INTO swappable (user_id, title, date, start_time, end_time, status)  VALUES (?, ?, ?, ?, ?, ?) `;
 
-    const [result] = await db.query(sql, [user_id,  title, date, start_time, end_time, status, ]);
+    const [result] = await db.query(sql, [ newtoken.id, title, date, start_time, end_time,status, ]);
 
     res.status(200).json({
       message: "Slot added successfully",
@@ -21,9 +24,9 @@ export const create = async (req, res) => {
   }
 };
 
-
-/** 🔹 READ all slots */
 export const readALL = async (req, res) => {
+  
+    
   try {
     const sql = "SELECT * FROM swappable ORDER BY created_at DESC";
     const [rows] = await db.query(sql);
@@ -38,41 +41,47 @@ export const readALL = async (req, res) => {
   }
 };
 
+export const readonly = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ message: "Access denied. No token provided." });
+    }
 
-/** 🔹 READ single slot by ID */
-export const swap = (req, res) => {
-  const sql = "SELECT * FROM swappable WHERE id = ?";
-  db.query(sql, [req.params.id], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (rows.length === 0)
-      return res.status(404).json({ message: "Slot not found" });
-    res.json(rows[0]);
-  });
+    const newtoken = jwt.verify(token, process.env.SECRET);
+    
+
+    const sql = "SELECT * FROM swappable WHERE user_id = ?";
+
+ const response = await db.query(sql, [newtoken.id])
+console.log(response);
+res.status(200).json({success: true, data: response,   userId: newtoken.id });
+
+
+  } catch (error) {
+    console.error("Token verification failed:", error.message);
+    res.status(403).json({ message: "Invalid or expired token" });
+  }
 };
 
-/** 🔹 UPDATE a slot */
-export const update = (req, res) => {
+export const update = async (req, res) => {
   const { status } = req.body;
   const { id } = req.params;
 
-  const sql = `UPDATE swappable SET status = ? WHERE id = ?`;
+  try {
+    console.log("Updating slot:", { id, status });
 
-  db.query(sql, [status, id], (err, result) => {
-    if (err) return res.status(500).json({ error: err.message });
+    const sql = `UPDATE swappable SET status = ? WHERE id = ?`;
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Slot not found" });
-    }
+    const result = await db.query(sql, [status, id])
+    
 
-    res.json({ message: "Status updated successfully" });
-  });
+    res.status(200).json({ message: "Status updated successfully"+ result });
+  } catch (error) {
+    console.error("Error updating status:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
-/**  DELETE a slot----- /:id */
-export const deleteswap = (req, res) => {
-  const sql = "DELETE FROM swappable WHERE id = ?";
-  db.query(sql, [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: "Slot deleted successfully" });
-  });
-};
+
+

@@ -1,11 +1,14 @@
 import express, { urlencoded } from 'express'
 import Router from './router/route.js'
 import cors from 'cors'
+
+import cookieParser from "cookie-parser";
 // import mysql from './model/db.js'
 
 const App = express()
 
 
+App.use(cookieParser())
 App.use(express.json())
 App.use(urlencoded({extended:true}))
 
