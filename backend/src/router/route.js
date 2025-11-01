@@ -5,7 +5,8 @@ import {create , readALL , update ,deleteswap  } from '../controller/logicalCont
 const Router = express.Router()
 
 Router.post('/signup' , register)
-Router.get('/login' , login)
+
+Router.post('/login' , login)
 
 Router.get('/readall' , readALL)
 Router.post('/create' , create)

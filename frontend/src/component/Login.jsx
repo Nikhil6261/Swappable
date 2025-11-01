@@ -3,17 +3,14 @@ import { useForm } from "react-hook-form";
 import Api from '../api/Api'
 
 const Login = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const {    register, handleSubmit, formState: { errors }, } = useForm();
 
   const onSubmit = async (data) => {
-    console.log("Login Data:", data);
+    console.log( data);
   
-    const res = await Api.get('/api/login' ,data)
-  
+    const res = await Api.post('/api/login',data)
+    console.log(res);
+    
   }
 
 

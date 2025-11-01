@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://swappable.onrender.com', 'http://localhost:3000'
+  baseURL: 'https://swappable.onrender.com',
+  // baseURL: 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
